@@ -1,20 +1,24 @@
 const express = require("express");
 const router = express.Router();
 const Task = require("../models/Task");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.post("/create", async (req, res) => {
+router.post("/create", authMiddleware, async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, dueDate } = req.body;
 
     const task = new Task({
       title,
       description,
+      dueDate,
+      user : req.user.id
     });
 
     await task.save();
 
     res.status(201).json({
       message: "Task Added",
+      task,
     });
   } catch (error) {
     res.status(500).json({
@@ -23,9 +27,9 @@ router.post("/create", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
-    const task = await Task.find()
+    const task = await Task.find({user:req.user.id})
       .populate("user", "username")
       .sort({ createdAt: -1 });
     res.json(task);
@@ -36,9 +40,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.delete('/:id', async(req, res) => {
+router.delete('/:id', authMiddleware, async(req, res) => {
   try{
-    const task = await Task.findById(req.params.id)
+    const task = await Task.findOneAndDelete({_id : req.params.id, user : req.user.id})
     
     if(!task) {
       res.status(400).json({
@@ -46,9 +50,8 @@ router.delete('/:id', async(req, res) => {
       })
     }
 
-    await Task.findByIdAndDelete(req.params.id)
     res.json({
-      message : "Post Deleted"
+      message : "Task Deleted"
     })
 
   }catch(error){
@@ -58,9 +61,9 @@ router.delete('/:id', async(req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", authMiddleware, async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id);
+        const task = await Task.findOne({ _id: req.params.id, user: req.user.id });
 
         if (!task) {
             return res.status(404).json({
@@ -77,14 +80,15 @@ router.get("/:id", async (req, res) => {
 });
 
 
-router.put('/:id', async(req, res) => {
+router.put('/:id', authMiddleware, async(req, res) => {
   try{
-    const { title, description } = req.body;
+    const { title, description, dueDate, status } = req.body;
 
-    const task = await Task.findByIdAndUpdate(req.params.id, {
+    const task = await Task.findByIdAndUpdate({_id : req.params.id, user : req.user.id}, {
       title,
       description,
-      status : req.body.status
+      dueDate,
+      status
     },{
       new : true,
       runValidators : true

@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const EditItem = () => {
+  const token = localStorage.getItem("token");
   const { id } = useParams();
   const navigate = useNavigate();
   const [itemData, setItemData] = useState({ title: "", description: "", dueDate: "" });
@@ -18,7 +19,11 @@ const EditItem = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get(`https://task-tracker-kc3h.onrender.com/items/${id}`);
+        const response = await axios.get(`https://task-tracker-kc3h.onrender.com/items/${id}`, {
+        headers : {
+          Authorization : `${token}`
+        }
+      });
         setItemData({
           title: response.data.title || "",
           description: response.data.description || "",
@@ -37,7 +42,11 @@ const EditItem = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await axios.put(`https://task-tracker-kc3h.onrender.com/items/${id}`, itemData);
+      await axios.put(`https://task-tracker-kc3h.onrender.com/items/${id}`, itemData, {
+        headers : {
+          Authorization : `${token}`
+        }
+      });
       showToast("Task Updated Successfully");
       setTimeout(() => navigate('/'), 1000);
     } catch (error) {

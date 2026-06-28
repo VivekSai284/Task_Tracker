@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
 const AddItem = () => {
+  const token = localStorage.getItem("token");
   const [itemData, setItemData] = useState({ title: "", description: "", dueDate: "" });
   const [isLoading, setIsLoading] = useState(false); // Loading state
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
@@ -17,7 +18,11 @@ const AddItem = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await axios.post('https://task-tracker-kc3h.onrender.com/items/create', itemData);
+      await axios.post('https://task-tracker-kc3h.onrender.com/items/create', itemData, {
+        headers : {
+          Authorization : `${token}`
+        }
+      });
       showToast("Task Added Successfully!");
       setTimeout(() => navigate('/'), 1000);
     } catch (error) {

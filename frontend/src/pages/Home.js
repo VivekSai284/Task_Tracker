@@ -4,6 +4,7 @@ import axios from 'axios';
 import Navbar from './Navbar';
 
 const Home = () => {
+  const token = localStorage.getItem("token");
   const [items, setItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true); // Loading state
@@ -18,7 +19,11 @@ const Home = () => {
   const fetchItems = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('https://task-tracker-kc3h.onrender.com/items');
+      const response = await axios.get('https://task-tracker-kc3h.onrender.com/items', {
+        headers : {
+          Authorization : `${token}`
+        }
+      });
       setItems(response.data);
     } catch (error) {
       showToast(error.response?.data?.message || "Failed to fetch tasks", "error");
@@ -38,7 +43,11 @@ const Home = () => {
 
     if (type === "delete") {
       try {
-        await axios.delete(`https://task-tracker-kc3h.onrender.com/items/${id}`);
+        await axios.delete(`https://task-tracker-kc3h.onrender.com/items/${id}`, {
+        headers : {
+          Authorization : `${token}`
+        }
+      });
         await fetchItems();
         showToast("Item deleted successfully");
       } catch (error) {
@@ -53,7 +62,11 @@ const Home = () => {
           description: currentItem.description,
           dueDate: currentItem.dueDate,
           status: "Completed"
-        });
+        }, {
+        headers : {
+          Authorization : `${token}`
+        }
+      });
         await fetchItems();
         showToast("Task completed!");
       } catch (error) {

@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 const AddItem = () => {
   const [itemData, setItemData] = useState({ title: "", description: "", dueDate: "" });
+  const [isLoading, setIsLoading] = useState(false); // Loading state
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const navigate = useNavigate();
 
@@ -14,19 +15,21 @@ const AddItem = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      await axios.post('http://localhost:5000/items/create', itemData);
+      await axios.post('https://task-tracker-kc3h.onrender.com/items/create', itemData);
       showToast("Task Added Successfully!");
       setTimeout(() => navigate('/'), 1000);
     } catch (error) {
       showToast(error.response?.data?.message || "Failed to create task", "error");
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4 relative">
       {toast.show && (
-        <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 ${toast.type === "error" ? "bg-red-500" : "bg-emerald-500"}`}>
+        <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-medium ${toast.type === "error" ? "bg-red-500" : "bg-emerald-500"}`}>
           {toast.message}
         </div>
       )}
@@ -38,42 +41,40 @@ const AddItem = () => {
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">Task Title</label>
             <input
-              type='text'
-              placeholder='What needs to be done?'
-              required
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+              type='text' required disabled={isLoading}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={itemData.title}
               onChange={(e) => setItemData({ ...itemData, title: e.target.value })}
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">Due Date</label>
             <input
-              type='date'
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-700"
+              type='date' disabled={isLoading}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               value={itemData.dueDate}
               onChange={(e) => setItemData({ ...itemData, dueDate: e.target.value })}
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Description (Optional)</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1">Description</label>
             <textarea
-              placeholder='Add details or notes...'
-              rows="4"
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
+              rows="4" disabled={isLoading}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 resize-none"
               value={itemData.description}
               onChange={(e) => setItemData({ ...itemData, description: e.target.value })}
             />
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Link to="/" className="w-1/2 text-center border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-2.5 rounded-lg transition">
-              Cancel
-            </Link>
-            <button type='submit' className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition shadow-sm">
-              Save Task
+            <Link to="/" className="w-1/2 text-center border border-gray-200 text-gray-700 font-medium py-2.5 rounded-lg hover:bg-gray-50 block">Cancel</Link>
+            <button 
+              type='submit' 
+              disabled={isLoading}
+              className="w-1/2 bg-indigo-600 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 disabled:bg-indigo-400"
+            >
+              {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
+              {isLoading ? "Saving..." : "Save Task"}
             </button>
           </div>
         </form>
